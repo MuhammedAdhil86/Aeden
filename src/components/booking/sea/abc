@@ -1,0 +1,295 @@
+use map()
+
+export default function Preview({ formData, files, onBack }) {
+  return (
+    <div className="pt-5">
+      <div className="bg-white rounded-xl p-5 text-black flex flex-col">
+        <h2 className="text-lg font-medium text-black">INVOICE NO : #2425252</h2>
+        {/* Step 1: Basic Details */}
+        <div className="border-t mt-5">
+          <h3 className="text-sm font-medium text-black border-b py-2 mb-4">Basic Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Supplier Name</p>
+              <p className="text-sm">{formData.supplierName || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Consignee</p>
+              <p className="text-sm">{formData.consignee || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Country</p>
+              <p className="text-sm">{formData.country || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Shipper Contact</p>
+              <p className="text-sm">{formData.shipperContact || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Shipper Email</p>
+              <p className="text-sm">{formData.shipperEmail || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Consignee Contact</p>
+              <p className="text-sm">{formData.consigneeContact || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Consignee Email</p>
+              <p className="text-sm">{formData.consigneeEmail || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Origin Address</p>
+              <p className="text-sm">{formData.originAddress || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 2: INCO Terms */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">INCO Terms</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">BI Number</p>
+              <p className="text-sm">{formData.BINumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">CNT Number</p>
+              <p className="text-sm">{formData.CNTNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Invoice Number</p>
+              <p className="text-sm">{formData.invoiceNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">HSM Code</p>
+              <p className="text-sm">{formData.HSMCode || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Bill of Lading Number</p>
+              <p className="text-sm">{formData.billOfLadingNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Purchase Order Number</p>
+              <p className="text-sm">{formData.purchaseOrderNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Shipment Reference Number</p>
+              <p className="text-sm">{formData.shipmentReferenceNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Customs Declaration Number</p>
+              <p className="text-sm">{formData.customsDeclarationNumber || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 3: Insurance */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">Insurance</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">ETA</p>
+              <p className="text-sm">{formData.eta || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">ETA Date</p>
+              <p className="text-sm">{formData.etaDate || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Free Date</p>
+              <p className="text-sm">{formData.freeDate || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Departure Date</p>
+              <p className="text-sm">{formData.departureDate || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Estimated Delivery Date</p>
+              <p className="text-sm">{formData.estimatedDeliveryDate || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Customs Clearance Date</p>
+              <p className="text-sm">{formData.customsClearanceDate || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Last Free Day</p>
+              <p className="text-sm">{formData.lastFreeDay || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Port Arrival Date</p>
+              <p className="text-sm">{formData.portArrivalDate || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 4: Notify */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">Notify</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product</p>
+              <p className="text-sm">{formData.product || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product Category</p>
+              <p className="text-sm">{formData.productCategory || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product Quantity</p>
+              <p className="text-sm">{formData.productQuantity || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product Weight</p>
+              <p className="text-sm">{formData.productWeight || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product Dimensions</p>
+              <p className="text-sm">{formData.productDimensions || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Product Value</p>
+              <p className="text-sm">{formData.productValue || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Packaging Type</p>
+              <p className="text-sm">{formData.packagingType || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Hazardous Material</p>
+              <p className="text-sm">{formData.hazardousMaterial || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 5: CNT Details */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">CNT Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Mode of Transport</p>
+              <p className="text-sm">{formData.modeOfTransport || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Carrier Name</p>
+              <p className="text-sm">{formData.carrierName || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Vessel/Flight Number</p>
+              <p className="text-sm">{formData.vesselFlightNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Port of Loading</p>
+              <p className="text-sm">{formData.portOfLoading || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Port of Discharge</p>
+              <p className="text-sm">{formData.portOfDischarge || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Freight Forwarder Name</p>
+              <p className="text-sm">{formData.freightForwarderName || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Freight Forwarder Contact</p>
+              <p className="text-sm">{formData.freightForwarderContact || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Container Type</p>
+              <p className="text-sm">{formData.containerType || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 6: Port Details */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">Port Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Insurance Provider</p>
+              <p className="text-sm">{formData.insuranceProvider || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Insurance Policy Number</p>
+              <p className="text-sm">{formData.insurancePolicyNumber || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Insurance Amount</p>
+              <p className="text-sm">{formData.insuranceAmount || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Special Instructions</p>
+              <p className="text-sm">{formData.specialInstructions || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Shipment Status</p>
+              <p className="text-sm">{formData.shipmentStatus || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Payment Terms</p>
+              <p className="text-sm">{formData.paymentTerms || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Incoterms</p>
+              <p className="text-sm">{formData.incoterms || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Currency</p>
+              <p className="text-sm">{formData.currency || "Not provided"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 7: File Upload */}
+        <div>
+          <h3 className="text-lg font-medium text-black border-b pb-2 mb-4">File Upload</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">File</p>
+              <p className="text-sm">{files.file?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Commercial Invoice</p>
+              <p className="text-sm">{files.commercialInvoice?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Packing List</p>
+              <p className="text-sm">{files.packingList?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Certificate of Origin</p>
+              <p className="text-sm">{files.certificateOfOrigin?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Bill of Lading</p>
+              <p className="text-sm">{files.billOfLading?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Customs Declaration</p>
+              <p className="text-sm">{files.customsDeclaration?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Additional Doc 1</p>
+              <p className="text-sm">{files.additionalDoc1?.name || "Not uploaded"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Additional Doc 2</p>
+              <p className="text-sm">{files.additionalDoc2?.name || "Not uploaded"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Back Button */}
+      <div className="border-t w-full flex justify-between p-8">
+        <Button
+          type="button"
+          variant="outline"
+          className="text-black px-7 border-neutral-300"
+          onClick={onBack}
+        >
+          Back
+        </Button>
+      </div>
+    </div>
+  );
+}

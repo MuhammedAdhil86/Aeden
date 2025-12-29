@@ -1,0 +1,86 @@
+/* ===================================== */
+/* TAILWIND MUST BE FIRST */
+/* ===================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================== */
+/* GOOGLE FONT */
+/* ===================================== */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* ===================================== */
+/* SHADCN / TAILWIND THEME */
+/* ===================================== */
+@layer base {
+  :root {
+    /* Core */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%; /* BLACK TEXT */
+
+    /* Cards */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    /* Popovers */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Primary */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
+
+    /* Muted → PLACEHOLDER COLOR */
+    --muted: 0 0% 96%;
+    --muted-foreground: 215 20% 50%; /* gray-500 */
+
+    /* Accent */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Inputs */
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 0%;
+
+    --radius: 0.5rem;
+  }
+
+  /* DARK MODE */
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --muted-foreground: 215 20% 65%;
+  }
+
+  /* GLOBAL BODY */
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Poppins", sans-serif;
+  }
+}
+
+/* ===================================== */
+/* CUSTOM SWITCH (SAFE — NO TAILWIND USE) */
+/* ===================================== */
+.switch {
+  --_switch-bg-clr: #fff;
+  --_switch-padding: 4px;
+  --_slider-txt-clr: #ffffff;
+  --_switch-easing: cubic-bezier(0.47, 1.64, 0.41, 0.8);
+
+  width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  cursor: pointer;
+  isolation: isolate;
+}
