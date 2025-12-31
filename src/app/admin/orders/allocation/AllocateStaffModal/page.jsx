@@ -300,7 +300,7 @@ export default function AllocateStaffModal({ client, onClose, onSuccess }) {
   <div className="flex items-center gap-4">
     <button
       onClick={onClose}
-      className="px-5 py-2 border rounded-lg text-gray-700 bg-gray-100 text-xs"
+      className=" py-2 border rounded-lg text-gray-700 bg-gray-100 text-xs"
     >
       Cancel
     </button>
