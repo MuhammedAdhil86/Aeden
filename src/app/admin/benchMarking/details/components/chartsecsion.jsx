@@ -2,7 +2,7 @@
 
 import React from "react";
 import BenchmarkPriceChart from "@/components/ui/monthlyRevenueChart";
-import SummaryCard from "./SummaryCard";
+import SummaryCard from "./Summarycard";
 
 /**
  * ChartSection Component
