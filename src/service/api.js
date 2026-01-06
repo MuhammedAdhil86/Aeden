@@ -122,3 +122,21 @@ export const scorecardSearch = 'master/driver/searchAllscorecard' //scorecard se
 export const searchTripLog = 'master/trip/filter' //filter trip log
 
 export const stockBaseUrl='master/stock/fetchUrl';
+
+
+// -------------------- BENCHMARKING --------------------
+
+// fetch benchmark data by month range
+export const benchMonthRange = 'master/bench/monthRange';
+
+// fetch benchmark details by product & category
+export const benchMonthRangeDetails = 'master/bench/monthRange-details';
+
+// fetch dominant market demand
+export const benchDominantDemand = 'master/bench/demands';
+
+export const benchProviderAndStaffCount = "/master/bench/providerAndstaffCount";
+
+
+// Fetch total price entries uploaded for a product
+export const benchPriceCount = "/master/bench/price-count";

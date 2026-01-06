@@ -39,7 +39,7 @@ const BenchmarkPriceChart = ({ priceData }) => {
   const formatYAxis = (value) => `${(value / 1000).toFixed(0)}k`;
 
   return (
-    <div className="h-[300px] bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl border border-gray-100">
+    <div className="h-[250px] bg-gradient-to-br from-white to-gray-50 p-2 rounded-2xl border border-gray-100">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={scaledData} margin={{ top: 10, right: 30, left: 10, bottom: 5 }} barSize={45}>
           <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />

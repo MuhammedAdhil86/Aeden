@@ -3,42 +3,76 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
-import { useBenchmarkStore } from "../../../../../components/store/useBenchmarkStore";
-
 import TopBar from "./topbar";
 import StatsRow from "./statsrow";
 import ChartSection from "./chartsecsion";
 import PriceTable from "./pricetable";
+import { useBenchmarkStore } from "@/components/store/useBenchmarkStore";
 
 export default function BenchMarkDetail() {
   const searchParams = useSearchParams();
+  const product_id = searchParams.get("product_id");
+  const category_id = searchParams.get("category_id");
+  const product_name = searchParams.get("product") || "-";
+  const category_name = searchParams.get("category") || "-";
 
-  const product = searchParams.get("product");
-  const category = searchParams.get("category");
-  const month = searchParams.get("month");
-  const year = searchParams.get("year");
-
+  // ✅ Store: dominant demand, provider/staff counts, total price entries, month range details, actions
   const {
-    monthRangeDetails = [],
-    monthlyData = [],
+    dominantDemand,
+    providerCount,
+    staffCount,
+    totalPriceEntries,
+    monthRangeDetails,
+    monthlyData,
+    loading,
     fetchMonthRangeDetails,
+    fetchDominantDemand,
+    fetchProviderAndStaffCount,
+    fetchTotalPriceEntries,
   } = useBenchmarkStore();
 
   const [search, setSearch] = useState("");
 
-  /* ---------------- FETCH DETAILS ---------------- */
-  useEffect(() => {
-    if (!product || !category || !month || !year) return;
+  // Default last month range
+  const today = new Date();
+  const lastMonth = new Date(today);
+  lastMonth.setMonth(today.getMonth() - 1);
 
-    fetchMonthRangeDetails({ product, category, month, year });
-  }, [product, category, month, year, fetchMonthRangeDetails]);
+  const [fromDate, setFromDate] = useState(lastMonth);
+  const [toDate, setToDate] = useState(today);
+
+  /* ---------------- FETCH DATA ---------------- */
+  useEffect(() => {
+    if (!product_id || !category_id) return;
+
+    const from = fromDate.toISOString().split("T")[0];
+    const to = toDate.toISOString().split("T")[0];
+
+    // Existing APIs
+    fetchMonthRangeDetails({ product_id, category_id, from, to });
+    fetchDominantDemand({ product_id, from, to });
+
+    // ✅ New APIs
+    fetchProviderAndStaffCount({ product_id, from, to });
+    fetchTotalPriceEntries({ product_id, from, to });
+  }, [
+    product_id,
+    category_id,
+    fromDate,
+    toDate,
+    fetchMonthRangeDetails,
+    fetchDominantDemand,
+    fetchProviderAndStaffCount,
+    fetchTotalPriceEntries,
+  ]);
 
   /* ---------------- SEARCH FILTER ---------------- */
   const filteredTable = useMemo(() => {
+    if (!Array.isArray(monthRangeDetails)) return [];
     return monthRangeDetails.filter(
       (row) =>
         row.staff?.toLowerCase().includes(search.toLowerCase()) ||
-        row.location?.toLowerCase().includes(search.toLowerCase())
+        row.region?.toLowerCase().includes(search.toLowerCase())
     );
   }, [monthRangeDetails, search]);
 
@@ -46,9 +80,7 @@ export default function BenchMarkDetail() {
   const priceStats = useMemo(() => {
     if (!filteredTable.length)
       return { lowest: "0.00", highest: "0.00", average: "0.00" };
-
     const prices = filteredTable.map((i) => Number(i.price || 0));
-
     return {
       lowest: Math.min(...prices).toFixed(2),
       highest: Math.max(...prices).toFixed(2),
@@ -58,79 +90,32 @@ export default function BenchMarkDetail() {
 
   /* ---------------- COUNTS ---------------- */
   const totalCount = filteredTable.length;
+
   const locationCount = useMemo(() => {
-    return new Set(filteredTable.map((i) => i.location).filter(Boolean)).size;
+    return new Set(filteredTable.map((i) => i.region).filter(Boolean)).size;
   }, [filteredTable]);
 
-  /* ---------------- SUMMARY DATA ---------------- */
+  /* ---------------- SUMMARY ---------------- */
   const summary = useMemo(() => {
-    const staffSet = new Set();
-    const providerSet = new Set();
-    const demandMap = {};
-
-    filteredTable.forEach((item) => {
-      // Normalize staff & provider names to avoid duplicates
-      if (item.staff) staffSet.add(item.staff.trim().toLowerCase());
-
-      if (item.provider) {
-        const normalizedProvider = item.provider.trim().toLowerCase();
-        if (normalizedProvider) providerSet.add(normalizedProvider);
-      }
-
-      if (item.demand) {
-        const d = item.demand.toLowerCase();
-        demandMap[d] = (demandMap[d] || 0) + 1;
-      }
-    });
-
-    const marketDemand =
-      Object.entries(demandMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
-
     return {
-      totalStaffs: staffSet.size,
-      totalProviders: providerSet.size, // fixed provider count
-      marketDemand,
-      totalPrices: filteredTable.length,
+      totalStaffs: staffCount ?? 0,             // ✅ from new API
+      totalProviders: providerCount ?? 0,       // ✅ from new API
+      marketDemand: dominantDemand || "-",      // ✅ from existing API
+      totalPrices: totalPriceEntries ?? totalCount, // ✅ from new API (fallback to filteredTable length)
     };
-  }, [filteredTable]);
+  }, [filteredTable, dominantDemand, staffCount, providerCount, totalPriceEntries]);
 
-  /* ---------------- TRANSFORM DATA FOR CHART ---------------- */
+  /* ---------------- CHART DATA ---------------- */
   const chartData = useMemo(() => {
     if (!Array.isArray(monthlyData)) return [];
-
-    const dataByMonth = monthlyData.reduce((acc, item) => {
-      const monthName = new Date(item.date).toLocaleString("default", {
-        month: "short",
-      });
-      const price = Number(item.price || 0);
-
-      const existing = acc.find((d) => d.month === monthName);
-      if (existing) existing.totalPrice += price;
-      else acc.push({ month: monthName, totalPrice: price });
-
-      return acc;
-    }, []);
-
-    // Sort by calendar order
-    const monthOrder = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    dataByMonth.sort(
-      (a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month)
-    );
-
-    return dataByMonth;
+    const map = {};
+    monthlyData.forEach((item) => {
+      const day = new Date(item.date).getDate();
+      map[day] = (map[day] || 0) + Number(item.price || 0);
+    });
+    return Object.entries(map)
+      .map(([day, totalPrice]) => ({ month: day.toString(), totalPrice }))
+      .sort((a, b) => Number(a.month) - Number(b.month));
   }, [monthlyData]);
 
   return (
@@ -138,22 +123,31 @@ export default function BenchMarkDetail() {
       <Header />
 
       <div className="py-6">
+        {/* ---------- TOPBAR ---------- */}
         <TopBar
-          category={category}
-          product={product}
           search={search}
           setSearch={setSearch}
+          fromDate={fromDate}
+          toDate={toDate}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+          product={product_name}
+          category={category_name}
         />
 
+        {/* ---------- STATS ROW ---------- */}
         <StatsRow
           stats={priceStats}
           totalCount={totalCount}
           locationCount={locationCount}
+          loading={loading}
         />
 
+        {/* ---------- CHART SECTION ---------- */}
         <ChartSection monthlyData={chartData} summary={summary} />
 
-        <PriceTable data={filteredTable} />
+        {/* ---------- PRICE TABLE ---------- */}
+        <PriceTable data={filteredTable} loading={loading} />
       </div>
     </div>
   );

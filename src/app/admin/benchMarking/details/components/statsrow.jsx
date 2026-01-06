@@ -1,7 +1,7 @@
 import MainStatCard from "./mainstatscard";
 
 export default function StatsRow({
-  stats,
+  stats = { lowest: "0.00", highest: "0.00", average: "0.00" },
   totalCount = 0,
   locationCount = 0,
 }) {

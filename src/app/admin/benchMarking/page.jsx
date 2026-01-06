@@ -6,7 +6,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Header from "@/components/Header";
-import MonthSelector from "@/components/ui/monthSelector";
 import AddBenchmarkModal from "./addBenchmarking/page";
 
 import {
@@ -27,8 +26,9 @@ import {
 } from "@/components/ui/table";
 
 import { useBenchmarkStore } from "../../../components/store/useBenchmarkStore";
+import { Button } from "@/components/ui/button";
 
-// ===== TABLE COLUMNS =====
+// -------------------- COLUMN DEFINITIONS --------------------
 const useBenchmarkColumns = () =>
   useMemo(
     () => [
@@ -62,21 +62,9 @@ const useBenchmarkColumns = () =>
         cell: ({ getValue }) => `₹${getValue()}`,
       },
       {
-        accessorKey: "demand",
+        accessorKey: "average_demand",
         header: "Market Demand",
-        cell: ({ getValue }) => {
-          const value = (getValue() || "").toLowerCase();
-          const map = {
-            high: "bg-green-500 w-full",
-            medium: "bg-yellow-400 w-2/3",
-            low: "bg-red-500 w-1/3",
-          };
-          return (
-            <div className="w-full bg-gray-300 h-2 rounded">
-              <div className={`h-2 rounded ${map[value] || ""}`} />
-            </div>
-          );
-        },
+        cell: ({ getValue }) => getValue() || "-",
       },
     ],
     []
@@ -92,12 +80,9 @@ export default function BenchMarking() {
     loading,
     searchTerm,
     searchField,
-    selectedMonth,
-    selectedYear,
-    fetchBenchmarks,
     setSearchTerm,
     setSearchField,
-    setMonthYear,
+    fetchMonthRange,
   } = useBenchmarkStore();
 
   const [sorting, setSorting] = useState([]);
@@ -105,10 +90,22 @@ export default function BenchMarking() {
   const [open, setOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchBenchmarks();
-  }, [fetchBenchmarks]);
+  // ===== Default dates =====
+  const today = new Date();
+  const priorMonth = new Date(today);
+  priorMonth.setMonth(today.getMonth() - 1);
 
+  const [fromDate, setFromDate] = useState(
+    priorMonth.toISOString().split("T")[0]
+  );
+  const [toDate, setToDate] = useState(today.toISOString().split("T")[0]);
+
+  // ===== Fetch data on date change =====
+  useEffect(() => {
+    if (fromDate && toDate) fetchMonthRange(fromDate, toDate);
+  }, [fromDate, toDate, fetchMonthRange]);
+
+  // ===== Close filter dropdown on outside click =====
   useEffect(() => {
     const close = (e) =>
       menuRef.current && !menuRef.current.contains(e.target) && setOpen(false);
@@ -128,10 +125,21 @@ export default function BenchMarking() {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  // ===== ROW CLICK: Send IDs to detail page =====
   const handleRowClick = (row) => {
     const d = new Date(row.date);
+
+    // get product_id & category_id from originalData
+    const productId = row.originalData?.product?.product_id;
+    const categoryId = row.originalData?.category?.category_id;
+
+    if (!productId || !categoryId) {
+      toast.error("Product or Category ID not found!");
+      return;
+    }
+
     router.push(
-      `/admin/benchMarking/details?product=${row.product}&category=${row.category}&month=${d.getMonth() + 1}&year=${d.getFullYear()}`
+      `/admin/benchMarking/details?product_id=${productId}&category_id=${categoryId}&product=${row.product}&category=${row.category}`
     );
   };
 
@@ -140,16 +148,29 @@ export default function BenchMarking() {
       <Header />
 
       <div className="p-6">
+        {/* --- Header / Date Picker / Filter --- */}
         <div className="flex justify-between mb-6">
-          <h1 className="text-xl font-medium">Price List</h1>
+          <h1 className="text-xl font-semibold text-gray-900 ml-1">
+            Price List
+          </h1>
 
           <div className="flex gap-4 items-center">
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              onMonthChange={(m) => setMonthYear(m, selectedYear)}
-              onYearChange={(y) => setMonthYear(selectedMonth, y)}
-            />
+            <div className="flex gap-2 items-center">
+              <label>From:</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="border px-2 py-1 rounded"
+              />
+              <label>To:</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="border px-2 py-1 rounded"
+              />
+            </div>
 
             <button
               onClick={() => setIsAddModalOpen(true)}
@@ -194,13 +215,17 @@ export default function BenchMarking() {
           </div>
         </div>
 
-        <div className="bg-white rounded shadow overflow-x-auto">
+        {/* --- Table --- */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-gray-600 ml-1">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gray-50">
               {table.getHeaderGroups().map((hg) => (
                 <TableRow key={hg.id}>
                   {hg.headers.map((h) => (
-                    <TableHead key={h.id}>
+                    <TableHead
+                      key={h.id}
+                      className="text-xs font-medium text-black uppercase tracking-wider px-3 py-2 whitespace-nowrap"
+                    >
                       {flexRender(h.column.columnDef.header, h.getContext())}
                     </TableHead>
                   ))}
@@ -211,7 +236,10 @@ export default function BenchMarking() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="py-4 text-gray-500 text-center"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -220,10 +248,13 @@ export default function BenchMarking() {
                   <TableRow
                     key={row.id}
                     onClick={() => handleRowClick(row.original)}
-                    className="cursor-pointer hover:bg-blue-50"
+                    className="hover:bg-gray-50 transition cursor-pointer"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        className="text-xs px-3 py-3.5 whitespace-nowrap"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -234,13 +265,57 @@ export default function BenchMarking() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-4 text-gray-500 text-xs"
+                  >
                     No data found
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+
+          {/* --- Pagination --- */}
+          <div className="bg-white px-4 py-2 flex items-center justify-end border-t border-gray-200">
+            <div className="flex items-center gap-6">
+              <span className="text-xs text-gray-700">
+                Rows per page: {table.getState().pagination.pageSize}
+              </span>
+              <span className="text-xs text-gray-700">
+                {table.getState().pagination.pageIndex *
+                  table.getState().pagination.pageSize +
+                  1}
+                -
+                {Math.min(
+                  (table.getState().pagination.pageIndex + 1) *
+                    table.getState().pagination.pageSize,
+                  groupedData.length
+                )}{" "}
+                of {groupedData.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="p-1 h-7 w-7"
+              >
+                ◀
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="p-1 h-7 w-7"
+              >
+                ▶
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -248,7 +323,7 @@ export default function BenchMarking() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={() => {
-          fetchBenchmarks();
+          fetchMonthRange(fromDate, toDate);
           toast.success("Product added");
         }}
       />
