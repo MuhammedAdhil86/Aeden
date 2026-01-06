@@ -28,7 +28,7 @@ import {
 import { useBenchmarkStore } from "../../../components/store/useBenchmarkStore";
 import { Button } from "@/components/ui/button";
 
-// -------------------- COLUMN DEFINITIONS --------------------
+/* ---------------- COLUMNS ---------------- */
 const useBenchmarkColumns = () =>
   useMemo(
     () => [
@@ -86,11 +86,14 @@ export default function BenchMarking() {
   } = useBenchmarkStore();
 
   const [sorting, setSorting] = useState([]);
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [open, setOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // ===== Default dates =====
+  /* ---------- DEFAULT DATES ---------- */
   const today = new Date();
   const priorMonth = new Date(today);
   priorMonth.setMonth(today.getMonth() - 1);
@@ -100,12 +103,10 @@ export default function BenchMarking() {
   );
   const [toDate, setToDate] = useState(today.toISOString().split("T")[0]);
 
-  // ===== Fetch data on date change =====
   useEffect(() => {
     if (fromDate && toDate) fetchMonthRange(fromDate, toDate);
   }, [fromDate, toDate, fetchMonthRange]);
 
-  // ===== Close filter dropdown on outside click =====
   useEffect(() => {
     const close = (e) =>
       menuRef.current && !menuRef.current.contains(e.target) && setOpen(false);
@@ -125,11 +126,7 @@ export default function BenchMarking() {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  // ===== ROW CLICK: Send IDs to detail page =====
   const handleRowClick = (row) => {
-    const d = new Date(row.date);
-
-    // get product_id & category_id from originalData
     const productId = row.originalData?.product?.product_id;
     const categoryId = row.originalData?.category?.category_id;
 
@@ -148,7 +145,7 @@ export default function BenchMarking() {
       <Header />
 
       <div className="p-6">
-        {/* --- Header / Date Picker / Filter --- */}
+        {/* HEADER */}
         <div className="flex justify-between mb-6">
           <h1 className="text-xl font-semibold text-gray-900 ml-1">
             Price List
@@ -179,7 +176,7 @@ export default function BenchMarking() {
               Add
             </button>
 
-            <div ref={menuRef} className="relative">
+            <div ref={menuRef} className="relative overflow-visible">
               <button
                 onClick={() => setOpen(!open)}
                 className="px-4 py-2 bg-black text-white rounded"
@@ -188,7 +185,7 @@ export default function BenchMarking() {
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow">
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow z-[9999]">
                   {["product", "category", "origin"].map((f) => (
                     <button
                       key={f}
@@ -215,8 +212,8 @@ export default function BenchMarking() {
           </div>
         </div>
 
-        {/* --- Table --- */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden text-gray-600 ml-1">
+        {/* TABLE */}
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden ml-1">
           <Table>
             <TableHeader className="bg-gray-50">
               {table.getHeaderGroups().map((hg) => (
@@ -224,9 +221,12 @@ export default function BenchMarking() {
                   {hg.headers.map((h) => (
                     <TableHead
                       key={h.id}
-                      className="text-xs font-medium text-black uppercase tracking-wider px-3 py-2 whitespace-nowrap"
+                      className="text-xs font-medium uppercase px-3 py-2"
                     >
-                      {flexRender(h.column.columnDef.header, h.getContext())}
+                      {flexRender(
+                        h.column.columnDef.header,
+                        h.getContext()
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -236,10 +236,7 @@ export default function BenchMarking() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="py-4 text-gray-500 text-center"
-                  >
+                  <TableCell colSpan={columns.length} className="text-center">
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -248,13 +245,10 @@ export default function BenchMarking() {
                   <TableRow
                     key={row.id}
                     onClick={() => handleRowClick(row.original)}
-                    className="hover:bg-gray-50 transition cursor-pointer"
+                    className="hover:bg-gray-50 cursor-pointer"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="text-xs px-3 py-3.5 whitespace-nowrap"
-                      >
+                      <TableCell key={cell.id} className="text-xs px-3 py-3">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -265,10 +259,7 @@ export default function BenchMarking() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="text-center py-4 text-gray-500 text-xs"
-                  >
+                  <TableCell colSpan={columns.length} className="text-center">
                     No data found
                   </TableCell>
                 </TableRow>
@@ -276,25 +267,22 @@ export default function BenchMarking() {
             </TableBody>
           </Table>
 
-          {/* --- Pagination --- */}
+          {/* ✅ SAME PAGINATION AS REFERENCE */}
           <div className="bg-white px-4 py-2 flex items-center justify-end border-t border-gray-200">
             <div className="flex items-center gap-6">
               <span className="text-xs text-gray-700">
-                Rows per page: {table.getState().pagination.pageSize}
+                Rows per page: {pagination.pageSize}
               </span>
               <span className="text-xs text-gray-700">
-                {table.getState().pagination.pageIndex *
-                  table.getState().pagination.pageSize +
-                  1}
-                -
+                {pagination.pageIndex * pagination.pageSize + 1}-
                 {Math.min(
-                  (table.getState().pagination.pageIndex + 1) *
-                    table.getState().pagination.pageSize,
+                  (pagination.pageIndex + 1) * pagination.pageSize,
                   groupedData.length
                 )}{" "}
                 of {groupedData.length}
               </span>
             </div>
+
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -303,8 +291,22 @@ export default function BenchMarking() {
                 disabled={!table.getCanPreviousPage()}
                 className="p-1 h-7 w-7"
               >
-                ◀
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
               </Button>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -312,7 +314,20 @@ export default function BenchMarking() {
                 disabled={!table.getCanNextPage()}
                 className="p-1 h-7 w-7"
               >
-                ▶
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               </Button>
             </div>
           </div>

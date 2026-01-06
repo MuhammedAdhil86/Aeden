@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import SearchableSelect from "@/components/ui/searchableSelect";
 import axios from "axios";
 import { Timer } from "lucide-react";
+import { useAuthStore } from "@/components/store/authStore"; // ✅ Import Zustand store
 
 const FLEET_BASE_URL = "https://aeden-fleet-t579q.ondigitalocean.app";
 
@@ -27,7 +28,6 @@ const SimpleAddDialog = ({ isOpen, onClose, title, endpoint, payloadKey, onSucce
     if (!value.trim()) return;
     setLoading(true);
     try {
-      // localStorage access inside event, safe for hydration
       const token = localStorage.getItem("token");
 
       let payload = { [payloadKey]: value };
@@ -156,13 +156,42 @@ const AddBenchmarkModal = ({ isOpen, onClose }) => {
     originCountry: null,
     region: "",
     price: "",
-    count: "",
+    count: "1", // Fixed count
     unit: null,
     demand: "",
     remarks: "",
     regionCoords: null,
     link: "",
   });
+
+  // ✅ Zustand store for logged-in user
+  const { user: authUser } = useAuthStore();
+  const [user, setUser] = useState({
+    name: "Guest",
+    email: "",
+    img: "/avatar.png",
+  });
+
+  useEffect(() => {
+    if (authUser) {
+      setUser({
+        name: `${authUser.first_name || ""} ${authUser.last_name || ""}`.trim(),
+        email: authUser.email || "",
+        img: authUser.image || "/avatar.png",
+      });
+    } else {
+      const firstName = localStorage.getItem("first_name");
+      const lastName = localStorage.getItem("last_name");
+      const email = localStorage.getItem("email");
+      const img = localStorage.getItem("img");
+
+      setUser({
+        name: `${firstName || ""} ${lastName || ""}`.trim() || "Guest",
+        email: email || "",
+        img: img || "/avatar.png",
+      });
+    }
+  }, [authUser]);
 
   useEffect(() => {
     if (isOpen) {
@@ -274,11 +303,11 @@ const AddBenchmarkModal = ({ isOpen, onClose }) => {
       company: { id: formData.provider.value },
       region: formData.region,
       price: formData.price,
-      count: formData.count,
+      count: 1, // Fixed count
       unit: formData.unit?.label,
       demand: formData.demand?.toUpperCase(),
       remarks: formData.remarks || "",
-      date: new Date().toISOString(), // client-side date, safe in event handler
+      date: new Date().toISOString(),
       provider: formData.provider?.label,
       location: formData.regionCoords ? { latitude: formData.regionCoords.latitude, longitude: formData.regionCoords.longitude } : undefined,
       link: formData.link,
@@ -299,7 +328,6 @@ const AddBenchmarkModal = ({ isOpen, onClose }) => {
               <div className="text-pink-500"><Timer size={24} /></div>
               <DialogTitle className="text-lg font-bold text-slate-800">Add Product Price</DialogTitle>
             </div>
-            <button onClick={onClose} className="text-gray-400 hover:text-black text-xl">✕</button>
           </div>
 
           <div className="px-8 py-6 max-h-[75vh] overflow-y-auto">
@@ -328,7 +356,11 @@ const AddBenchmarkModal = ({ isOpen, onClose }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <Field label="Count">
-                  <Input className="h-10" placeholder="0" value={formData.count} onChange={(e) => handleChange("count", e.target.value)} />
+                  <Input 
+                    className="h-10" 
+                    value={formData.count} 
+                    disabled // Fixed count
+                  />
                 </Field>
                 <Field label="Unit" onAdd={() => setActiveSubModal('unit')}>
                   <SearchableSelect value={formData.unit} placeholder="Box" options={units} onChange={(i) => handleChange("unit", i)} />
@@ -359,10 +391,11 @@ const AddBenchmarkModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* ✅ Footer with dynamic user */}
           <div className="px-8 py-4 border-t flex items-center justify-between bg-slate-50/50">
             <div className="text-sm">
               <span className="text-gray-600 font-medium">Added By</span><br />
-              <span className="text-green-600 font-semibold text-sm">Sidharth C R</span>
+              <span className="text-green-600 font-semibold text-sm">{user.name}</span>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose} className="px-8 py-2 border-gray-300 text-red-400 font-medium hover:bg-red-50">Cancel</Button>

@@ -1,11 +1,7 @@
-
-
-
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,27 +10,26 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// ✅ Import your Zustand store
+import { useAuthStore } from "@/components/store/authStore";
 
 const Header = () => {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter((segment) => segment);
   const router = useRouter();
-  
+
   const segmentLabels = {
     home: "Dashboard",
     procurement: "Procurement",
@@ -44,7 +39,7 @@ const Header = () => {
     "market-price-trends": "Market Price Trends",
     "stock-analysis": "Stock Analysis",
     "performance-metrics": "Performance Metrics",
-    stock: "Stocks"
+    stock: "Stocks",
   };
 
   const breadcrumbs = pathSegments.map(
@@ -53,12 +48,12 @@ const Header = () => {
       segment.charAt(0).toUpperCase() + segment.slice(1)
   );
 
-  console.log("Generated breadcrumbs:", breadcrumbs);
-
-  // Function to determine the proper path for breadcrumb links
   const getBreadcrumbPath = (index) => {
     return `/${pathSegments.slice(0, index + 1).join("/")}`;
   };
+
+  // ✅ Use Zustand store for user & logout
+  const { user: authUser, logout } = useAuthStore();
 
   const [user, setUser] = useState({
     img: "/avatar.png",
@@ -67,24 +62,40 @@ const Header = () => {
   });
 
   useEffect(() => {
-    const img = localStorage.getItem("img");
-    const name = localStorage.getItem("contact_person");
-    const email = localStorage.getItem("email");
-
-    if (img && name && email) {
+    // If Zustand has user data, use it
+    if (authUser) {
       setUser({
-        img,
-        name,
-        email,
+        img: authUser.image || "/avatar.png",
+        name: `${authUser.first_name || ""} ${authUser.last_name || ""}`.trim(),
+        email: authUser.email || "",
       });
+    } else {
+      // fallback: try localStorage
+      const img = localStorage.getItem("img");
+      const firstName = localStorage.getItem("first_name");
+      const lastName = localStorage.getItem("last_name");
+      const email = localStorage.getItem("email");
+
+      if (firstName || lastName || img || email) {
+        setUser({
+          img: img || "/avatar.png",
+          name: `${firstName || ""} ${lastName || ""}`.trim() || "Guest",
+          email: email || "",
+        });
+      }
     }
-  }, []);
+  }, [authUser]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    // ✅ Call Zustand logout
+    logout();
+
+    // ✅ Clear any localStorage fallback data
     localStorage.removeItem("img");
-    localStorage.removeItem("contact_person");
+    localStorage.removeItem("first_name");
+    localStorage.removeItem("last_name");
     localStorage.removeItem("email");
+
     router.push("/");
   };
 
@@ -149,6 +160,7 @@ const Header = () => {
       </div>
 
       <div className="flex gap-x-3">
+        {/* 🔔 Notification Icon */}
         <div className="bg-white h-10 w-10 flex justify-center items-center rounded-xl">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -166,6 +178,8 @@ const Header = () => {
             <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
           </svg>
         </div>
+
+        {/* 🔽 User Dropdown */}
         <div className="bg-white h-10 w-10 flex justify-center items-center rounded-xl">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -181,26 +195,21 @@ const Header = () => {
                 </svg>
               </div>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent className="w-60 bg-white border rounded-xl me-5 p-3">
               <DropdownMenuLabel className="w-full flex gap-x-2 relative">
                 <div className="rounded-full w-10 h-10 flex object-cover">
-                  <img
-                    src={user.img}
-                    alt="User Avatar"
-                    className="object-cover"
-                  />
+                  <img src={user.img} alt="User Avatar" className="object-cover" />
                 </div>
                 <div>
-                  <p className="text-black text-sm font-semibold">
-                    {user.name}
-                  </p>
-                  <p className="text-xs font-normal text-neutral-400">
-                    {user.email}
-                  </p>
+                  <p className="text-black text-sm font-semibold">{user.name}</p>
+                  <p className="text-xs font-normal text-neutral-400">{user.email}</p>
                 </div>
                 <div className="bg-green-500 rounded-full h-2 w-2 absolute top-2/3 left-7"></div>
               </DropdownMenuLabel>
+
               <DropdownMenuSeparator />
+
               <DropdownMenuGroup className="flex flex-col gap-y-2">
                 <DropdownMenuItem className="bg-black flex justify-start rounded-lg py-2 cursor-pointer">
                   <svg
@@ -220,6 +229,7 @@ const Header = () => {
                   </svg>
                   <p className="text-white text-sm">View Profile</p>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem className="bg-transparent flex justify-start rounded-lg py-2 cursor-pointer">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -230,10 +240,9 @@ const Header = () => {
                   >
                     <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
                   </svg>
-                  <p className="text-sm font-medium text-black">
-                    Account Settings
-                  </p>
+                  <p className="text-sm font-medium text-black">Account Settings</p>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -246,6 +255,7 @@ const Header = () => {
                   </svg>
                   <p className="text-sm font-medium text-black">About Us</p>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -262,19 +272,16 @@ const Header = () => {
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
-                  <p className="text-sm font-medium text-black">
-                    Change email address
-                  </p>
+                  <p className="text-sm font-medium text-black">Change email address</p>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem>
                   <img src="/help-logo.svg" />
                   <p className="text-sm font-medium text-black">Help</p>
                 </DropdownMenuItem>
+
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger
-                    onClick={handleLogout}
-                    className="cursor-pointer"
-                  >
+                  <DropdownMenuSubTrigger onClick={handleLogout} className="cursor-pointer">
                     <img src="/logout-icon.svg" />
                     <p className="text-sm font-medium text-black">Logout</p>
                   </DropdownMenuSubTrigger>

@@ -3,14 +3,16 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { loginUser } from "@/service/login";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuthStore } from "../../components/store/authStore"; // ✅ AUTH STORE
 
 function Login() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const { login } = useAuthStore(); // ✅ Zustand login
 
   const {
     register,
@@ -20,16 +22,21 @@ function Login() {
 
   const onSubmit = async (data) => {
     setLoading(true);
-    try {
-      const res = await loginUser(data);
 
-      if (res?.data?.company?.id === "2" || res?.data?.company?.id === "14") {
-        const { token } = res.data;
+    try {
+      // ✅ LOGIN THROUGH AUTH STORE
+      const res = await login(data);
+
+      const companyId = res?.data?.company?.id;
+
+      // ✅ SAME LOGIC AS BEFORE
+      if (companyId === "2" || companyId === "14") {
+        const { token, company } = res.data;
 
         localStorage.setItem("token", token);
-        localStorage.setItem("img", res.data.company.logo);
-        localStorage.setItem("contact_person", res.data.company.contact_person);
-        localStorage.setItem("email", res.data.company.email);
+        localStorage.setItem("img", company.logo);
+        localStorage.setItem("contact_person", company.contact_person);
+        localStorage.setItem("email", company.email);
 
         router.push("/admin/dashboard");
       } else {
@@ -44,7 +51,6 @@ function Login() {
 
   return (
     <div className="h-screen w-full overflow-hidden font-poppins">
-      {/* ❌ FIXED: removed leading space before grid */}
       <div className="grid grid-cols-1 md:grid-cols-[35%_65%] items-start h-screen">
         
         {/* LEFT SIDE */}
